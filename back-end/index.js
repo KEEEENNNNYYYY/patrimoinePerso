@@ -1,39 +1,28 @@
 const fs = require("fs");
 const pg = require("pg");
-const express = require("express");
-
-const app = express();
-app.use(express.json());
-require('dotenv').config();
+require('dotenv').config();  // Charger les variables d'environnement depuis le fichier .env
 
 const config = {
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  database: process.env.DB_NAME,
+  user: process.env.DB_USER,  // Lire l'utilisateur depuis le fichier .env
+  password: process.env.DB_PASSWORD,  // Lire le mot de passe depuis le fichier .env
+  host: process.env.DB_HOST,  // Lire l'hôte depuis le fichier .env
+  port: process.env.DB_PORT,  // Lire le port depuis le fichier .env
+  database: process.env.DB_NAME,  // Lire le nom de la base de données depuis le fichier .env
   ssl: {
     rejectUnauthorized: true,
-    ca: fs.readFileSync("./ca.pem").toString(),
+    ca: fs.readFileSync("./ca.pem").toString(), // Lire le certificat SSL depuis le chemin dans .env
   },
 };
 
 const client = new pg.Client(config);
 client.connect(function (err) {
   if (err) throw err;
-  console.log("Connected to PostgreSQL");
-});
+  client.query("SELECT VERSION()", [], function (err, result) {
+    if (err) throw err;
 
-app.get("/possession", (req, res) => {
-  client.query("SELECT * FROM possession", (err, result) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ error: "Failed to fetch data" });
-    }
-    res.status(200).json(result.rows);
+    console.log(result.rows[0]);
+    client.end(function (err) {
+      if (err) throw err;
+    });
   });
-});
-
-app.listen(3000, () => {
-  console.log("Server running on port 3000");
 });
