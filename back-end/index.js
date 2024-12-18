@@ -4,13 +4,14 @@ const express = require("express");
 
 const app = express();
 app.use(express.json());
+require('dotenv').config();
 
 const config = {
-  user: "avnadmin",
-  password: "AVNS_FC6mAvRkRtd3qi6Sw6G",
-  host: "pg-1f538d92-patrimoine-d-b.j.aivencloud.com",
-  port: "23226",
-  database: "defaultdb",
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  database: process.env.DB_NAME,
   ssl: {
     rejectUnauthorized: true,
     ca: fs.readFileSync("./ca.pem").toString(),
