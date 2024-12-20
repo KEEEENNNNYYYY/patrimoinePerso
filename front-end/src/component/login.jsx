@@ -22,40 +22,38 @@ function Login() {
 
     const handleClick = () => {
         const { userLogin, userPasssword } = loginData;
+        
+        // Validation des champs avant envoi
+        if (!userLogin || !userPasssword) {
+            setError('Veuillez remplir tous les champs');
+            return;
+        }
     
         instance.post('/login', {
             email: userLogin,
             password: userPasssword
         })
-        .then(function (response) {
-            console.log("Response: ", response);
-            
-            // Stocker le token
+        .then(response => {
             localStorage.setItem("LOCAL_STORAGE_API_KEY", response.data.token);
-            
-            // Réinitialiser les erreurs
             setError('');
-            
-            // Rediriger vers la page d'accueil
             navigate('/');
         })
-        .catch(function (error) {
+        .catch(error => {
             console.error("Error: ", error);
             
-            // Gérer les erreurs de connexion
             if (error.response) {
-                // La requête a été faite et le serveur a répondu avec un code d'état
-                // qui sort de la plage de 2xx
+                // Erreur de réponse du serveur
                 setError(error.response.data.message || 'Erreur de connexion');
             } else if (error.request) {
-                // La requête a été faite mais aucune réponse n'a été reçue
-                setError('Pas de réponse du serveur');
+                // Pas de réponse du serveur
+                setError('Serveur injoignable. Vérifiez votre connexion.');
             } else {
-                // Quelque chose s'est passé lors de la configuration de la requête
-                setError('Erreur lors de la connexion');
+                // Erreur de configuration
+                setError('Une erreur est survenue. Réessayez plus tard.');
             }
         });
     };
+    
 
     return (
         <>
