@@ -9,12 +9,14 @@ require("dotenv").config();
 
 const app = express();
 const port = process.env.PORT || 3000;
+
 app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  origin: 'https://patrimoineperso.onrender.com/', // URL de votre frontend Vite
+  origin: 'https://patrimoineperso.onrender.com', // Retirez le slash final
   credentials: true
 }));
+
 
 app.use(express.json()); // Middleware pour analyser le JSON
 

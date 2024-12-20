@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import instance from "../../../back-end/model/instance";
+import instance from "../model/instance";
 
 function Login() {
     const navigate = useNavigate();
