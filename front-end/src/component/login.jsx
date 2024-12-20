@@ -34,24 +34,35 @@ function Login() {
             password: userPasssword
         })
         .then(response => {
+            console.log('Réponse complète du serveur:', response);
             localStorage.setItem("LOCAL_STORAGE_API_KEY", response.data.token);
             setError('');
             navigate('/');
         })
         .catch(error => {
-            console.error("Error: ", error);
+            console.error("Erreur détaillée : ", error);
             
+            // Log plus détaillé
             if (error.response) {
-                // Erreur de réponse du serveur
-                setError(error.response.data.message || 'Erreur de connexion');
-            } else if (error.request) {
-                // Pas de réponse du serveur
-                setError('Serveur injoignable. Vérifiez votre connexion.');
+                console.log('Données de réponse:', error.response.data);
+                console.log('Statut:', error.response.status);
+                console.log('Headers:', error.response.headers);
+            }
+            
+            if (error.request) {
+                console.log('Requête:', error.request);
+            }
+            
+            // Message d'erreur spécifique
+            if (error.message === 'Network Error') {
+                setError('Problème de réseau. Vérifiez votre connexion internet.');
+            } else if (error.code === 'ECONNABORTED') {
+                setError('La requête a dépassé le temps limite.');
             } else {
-                // Erreur de configuration
-                setError('Une erreur est survenue. Réessayez plus tard.');
+                setError('Serveur injoignable. Vérifiez votre connexion.');
             }
         });
+        
     };
     
 

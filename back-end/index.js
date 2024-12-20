@@ -13,7 +13,9 @@ const port = process.env.PORT || 3000;
 app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  origin: 'https://patrimoineperso.onrender.com', // Retirez le slash final
+  origin: ['https://patrimoineperso.onrender.com', // Retirez le slash final
+  'http://localhost:5173',  // Pour le développement local
+  'http://localhost:4173'],
   credentials: true
 }));
 
@@ -76,7 +78,15 @@ app.post("/register", async (req, res) => {
   const user = insertResult.rows[0];
   res.status(201).json({ message: "User created", user });
 });
+app.use((req, res, next) => {
+  console.log(`Requête reçue: ${req.method} ${req.path}`);
+  next();
+});
 
+// Route de test
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', message: 'Serveur en ligne' });
+});
 // Route pour le login des utilisateurs
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;

@@ -17,5 +17,16 @@ instance.interceptors.request.use(
         return Promise.reject(error);
     }
 );
+instance.interceptors.response.use(
+    response => response,
+    error => {
+        if (!error.response) {
+            // Erreur de réseau
+            console.error('Erreur de réseau:', error.message);
+        }
+        return Promise.reject(error);
+    }
+);
+
 
 export default instance; // Vous pouvez exporter l'instance pour l'utiliser dans d'autres parties du code
