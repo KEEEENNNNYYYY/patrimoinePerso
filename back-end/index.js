@@ -4,31 +4,27 @@ const jwt = require("jsonwebtoken");
 const pg = require("pg");
 const fs = require("fs");
 const cors = require('cors');
-
 require("dotenv").config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
+
+// Configuration de CORS
 app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  origin: ['https://patrimoineperso.onrender.com', // Retirez le slash final
-  'http://localhost:5173',  // Pour le développement local
-  'http://localhost:4173'],
+  origin: [
+    'https://patrimoineperso.onrender.com',  // URL de ton frontend en production
+    'http://localhost:5173',  // Frontend en développement
+    'http://localhost:4173'
+  ],
   credentials: true
 }));
 
-
-// Augmenter les limites
-app.use(express.json({ 
-  limit: '50mb' 
-}));
-app.use(express.urlencoded({ 
-  limit: '50mb', 
-  extended: true 
-}));
-// Middleware pour analyser le JSON
+// Augmenter les limites des requêtes
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Configuration de la base de données PostgreSQL
 const config = {
@@ -43,33 +39,16 @@ const config = {
   },
 };
 
-app.use((req, res, next) => {
-  req.setTimeout(30000); // 30 secondes
-  res.setTimeout(30000); // 30 secondes
-  next();
-});
-
-// Route de diagnostic
-app.get('/ping', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
-    timestamp: new Date().toISOString() 
-  });
-});
-
-
 const client = new pg.Client(config);
 client.connect();
 
 // Middleware pour vérifier le token JWT
 const authenticateToken = (req, res, next) => {
   const token = req.headers["authorization"];
-
   if (!token) {
     return res.status(401).json({ message: "No token provided" });
   }
 
-  // Extraire le token après "Bearer"
   jwt.verify(token.split(" ")[1], process.env.JWT_SECRET, (err, user) => {
     if (err) {
       return res.status(403).json({ message: "Invalid token" });
@@ -83,64 +62,53 @@ const authenticateToken = (req, res, next) => {
 app.post("/register", async (req, res) => {
   const { email, password } = req.body;
 
-  // Vérification de l'existence de l'utilisateur
-  const result = await client.query("SELECT * FROM users WHERE email = $1", [email]);
-  if (result.rows.length > 0) {
-    return res.status(400).json({ message: "User already exists" });
+  try {
+    const result = await client.query("SELECT * FROM users WHERE email = $1", [email]);
+    if (result.rows.length > 0) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const insertResult = await client.query(
+      "INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id, email",
+      [email, hashedPassword]
+    );
+
+    const user = insertResult.rows[0];
+    res.status(201).json({ message: "User created", user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
-
-  // Hachage du mot de passe
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  // Insertion de l'utilisateur dans la base de données
-  const insertResult = await client.query(
-    "INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id, email",
-    [email, hashedPassword]
-  );
-
-  const user = insertResult.rows[0];
-  res.status(201).json({ message: "User created", user });
-});
-app.use((req, res, next) => {
-  console.log(`Requête reçue: ${req.method} ${req.path}`);
-  next();
-});
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
-  console.log('Headers:', req.headers);
-  console.log('Body:', req.body);
-  next();
 });
 
-
-// Route de test
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'Serveur en ligne' });
-});
 // Route pour le login des utilisateurs
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
-  // Recherche de l'utilisateur dans la base de données
-  const result = await client.query("SELECT * FROM users WHERE email = $1", [email]);
-  const user = result.rows[0];
+  try {
+    const result = await client.query("SELECT * FROM users WHERE email = $1", [email]);
+    const user = result.rows[0];
 
-  if (!user) {
-    return res.status(400).json({ message: "Invalid email or password" });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid email or password" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid email or password" });
+    }
+
+    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    res.status(200).json({ message: "Login successful", token });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
-
-  // Vérification du mot de passe
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) {
-    return res.status(400).json({ message: "Invalid email or password" });
-  }
-
-  // Création du token JWT
-  const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
-    expiresIn: "1h", // Le token expirera dans 1 heure
-  });
-
-  res.status(200).json({ message: "Login successful", token });
 });
 
 // Route protégée pour obtenir les informations de l'utilisateur
