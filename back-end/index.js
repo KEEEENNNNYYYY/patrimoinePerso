@@ -3,25 +3,28 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const pg = require("pg");
 const fs = require("fs");
-const cors = require('cors');
+const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
 const port = process.env.PORT || 3000;
-app.options('*', cors()); // Ceci permet de répondre aux requêtes OPTIONS
-
 
 // Configuration de CORS
 app.use(cors({
+  origin: [
+    'https://patrimoineperso.onrender.com', // URL de production
+    'http://localhost:5173', // URL de développement local
+    'http://localhost:4173', // Si tu utilises un autre port local
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  origin: '*',
-  credentials: true,
+  credentials: true, // Permet les cookies et l'en-tête Authorization
 }));
-// CORS prévol (pour gérer les requêtes OPTIONS)
-app.options('*', cors());
 
-// Augmenter les limites des requêtes
+// // Pour gérer les requêtes OPTIONS (pré-vol)
+// app.options('*', cors());
+
+// Middleware pour gérer les grandes requêtes
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
@@ -57,36 +60,9 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// Route pour l'enregistrement des utilisateurs
-app.post("/register", async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    const result = await client.query("SELECT * FROM users WHERE email = $1", [email]);
-    if (result.rows.length > 0) {
-      return res.status(400).json({ message: "User already exists" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const insertResult = await client.query(
-      "INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id, email",
-      [email, hashedPassword]
-    );
-
-    const user = insertResult.rows[0];
-    res.status(201).json({ message: "User created", user });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
 // Route pour le login des utilisateurs
 app.post("/login", async (req, res) => {
-  console.log('Request received:', req.body);
   const { email, password } = req.body;
-
   try {
     const result = await client.query("SELECT * FROM users WHERE email = $1", [email]);
     const user = result.rows[0];
@@ -104,22 +80,15 @@ app.post("/login", async (req, res) => {
       expiresIn: "1h",
     });
 
-    res.status(200).set('Access-Control-Allow-Credentials', 'true').json({ message: "Login successful", token });
+    // Ajoute l'en-tête CORS explicitement
+    res.status(200)
+      .set('Access-Control-Allow-Origin', 'http://localhost:5173') // Remplace par ton URL de frontend
+      .set('Access-Control-Allow-Credentials', 'true')
+      .json({ message: "Login successful", token });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
   }
-  
-});
-
-// Route protégée pour obtenir les informations de l'utilisateur
-app.get('/me', authenticateToken, (req, res) => {
-  res.json({
-    user: {
-      id: req.user.id,
-      email: req.user.email
-    }
-  });
 });
 
 // Démarrage du serveur
