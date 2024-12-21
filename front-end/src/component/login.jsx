@@ -1,98 +1,88 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import instance from "../model/instance";
+import React, { useState } from 'react';
 
-function Login() {
-    const navigate = useNavigate();
+const Login = () => {
+  // Déclaration des états pour l'username et le password
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);  // Pour afficher une erreur éventuelle
+  const [loading, setLoading] = useState(false);  // Pour gérer le statut de chargement
 
-    const [loginData, setLoginData] = useState({
-        userLogin: '',
-        userPasssword: '',
-    });
+  // Fonction qui gère l'envoi du formulaire
+  const handleLogin = async (e) => {
+    e.preventDefault(); // Empêcher le comportement par défaut du formulaire (rechargement de la page)
 
-    const [error, setError] = useState('');
+    // Validation simple des champs
+    if (!username || !password) {
+      setError('Username and password are required.');
+      return;
+    }
 
-    const handleChange = (event) => {
-        const { name, value } = event.target;
-        setLoginData({
-            ...loginData,
-            [name]: value,
-        });
-    };
+    setLoading(true); // Début du chargement
 
-    const handleClick = () => {
-        const { userLogin, userPasssword } = loginData;
-        
-        // Validation initiale
-        if (!userLogin || !userPasssword) {
-            setError('Veuillez remplir tous les champs');
-            return;
-        }
-    
-        // État de chargement
-        const [isLoading, setIsLoading] = useState(false);
-        setIsLoading(true);
-    
-        instance.post('/login', {
-            email: userLogin,
-            password: userPasssword
-        })
-        .then(response => {
-            console.log('Réponse complète:', response);
-            localStorage.setItem("LOCAL_STORAGE_API_KEY", response.data.token);
-            setError('');
-            navigate('/');
-        })
-        .catch(error => {
-            console.error("Erreur détaillée : ", error);
-            
-            // Gestion des différents types d'erreurs
-            if (error.code === 'ECONNABORTED') {
-                setError('Le serveur met trop de temps à répondre. Réessayez.');
-            } else if (error.response) {
-                // Erreur de réponse du serveur
-                setError(error.response.data.message || 'Erreur de connexion');
-            } else if (error.request) {
-                // Pas de réponse du serveur
-                setError('Serveur injoignable. Vérifiez votre connexion réseau.');
-            } else {
-                // Erreur de configuration
-                setError('Une erreur inattendue est survenue.');
-            }
-        })
-        .finally(() => {
-            setIsLoading(false);
-        });
-    };
-    
-    
+    try {
+      // Remplacer l'URL par l'API backend appropriée
+      const response = await fetch('https://patrimoineperso-backend.onrender.com/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }), // Envoyer les données sous forme de JSON
+      });
 
-    return (
-        <>
-            <p>Login</p>
-            {error && <p style={{color: 'red'}}>{error}</p>}
-            <input
-                type="text"
-                value={loginData.userLogin}
-                name="userLogin" 
-                className="userLogin"
-                onChange={handleChange}
-                placeholder="Enter your email"
-            />
-            <p>Password</p>
-            <input
-                type="password" 
-                value={loginData.userPasssword}
-                name="userPasssword" 
-                className="userPassword"
-                onChange={handleChange}
-                placeholder="Enter your password"
-            />
-            <button onClick={handleClick}>
-                Login
-            </button>
-        </>
-    );
-}
+      if (!response.ok) {
+        throw new Error('Login failed! Please check your credentials.');
+      }
+
+      const data = await response.json();
+      // Traitement de la réponse (par exemple, stocker un token JWT)
+      console.log('Login successful:', data);
+
+      // Réinitialisation des champs de formulaire
+      setUsername('');
+      setPassword('');
+      setError(null); // Réinitialiser les erreurs
+    } catch (err) {
+      setError(err.message); // Afficher l'erreur en cas de problème
+    } finally {
+      setLoading(false); // Fin du chargement
+    }
+  };
+
+  return (
+    <div className="login-container">
+      <h2>Login</h2>
+      {/* Affichage des erreurs */}
+      {error && <p className="error-message">{error}</p>}
+      
+      <form onSubmit={handleLogin}>
+        <div className="input-group">
+          <label htmlFor="username">Username</label>
+          <input
+            type="text"
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="input-group">
+          <label htmlFor="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+
+        <button type="submit" disabled={loading}>
+          {loading ? 'Logging in...' : 'Login'}
+        </button>
+      </form>
+    </div>
+  );
+};
 
 export default Login;
