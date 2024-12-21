@@ -23,18 +23,22 @@ function Login() {
     const handleClick = () => {
         const { userLogin, userPasssword } = loginData;
         
-        // Validation des champs avant envoi
+        // Validation initiale
         if (!userLogin || !userPasssword) {
             setError('Veuillez remplir tous les champs');
             return;
         }
+    
+        // État de chargement
+        const [isLoading, setIsLoading] = useState(false);
+        setIsLoading(true);
     
         instance.post('/login', {
             email: userLogin,
             password: userPasssword
         })
         .then(response => {
-            console.log('Réponse complète du serveur:', response);
+            console.log('Réponse complète:', response);
             localStorage.setItem("LOCAL_STORAGE_API_KEY", response.data.token);
             setError('');
             navigate('/');
@@ -42,28 +46,25 @@ function Login() {
         .catch(error => {
             console.error("Erreur détaillée : ", error);
             
-            // Log plus détaillé
-            if (error.response) {
-                console.log('Données de réponse:', error.response.data);
-                console.log('Statut:', error.response.status);
-                console.log('Headers:', error.response.headers);
-            }
-            
-            if (error.request) {
-                console.log('Requête:', error.request);
-            }
-            
-            // Message d'erreur spécifique
-            if (error.message === 'Network Error') {
-                setError('Problème de réseau. Vérifiez votre connexion internet.');
-            } else if (error.code === 'ECONNABORTED') {
-                setError('La requête a dépassé le temps limite.');
+            // Gestion des différents types d'erreurs
+            if (error.code === 'ECONNABORTED') {
+                setError('Le serveur met trop de temps à répondre. Réessayez.');
+            } else if (error.response) {
+                // Erreur de réponse du serveur
+                setError(error.response.data.message || 'Erreur de connexion');
+            } else if (error.request) {
+                // Pas de réponse du serveur
+                setError('Serveur injoignable. Vérifiez votre connexion réseau.');
             } else {
-                setError('Serveur injoignable. Vérifiez votre connexion.');
+                // Erreur de configuration
+                setError('Une erreur inattendue est survenue.');
             }
+        })
+        .finally(() => {
+            setIsLoading(false);
         });
-        
     };
+    
     
 
     return (

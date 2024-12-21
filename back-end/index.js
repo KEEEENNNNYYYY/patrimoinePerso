@@ -20,7 +20,15 @@ app.use(cors({
 }));
 
 
-app.use(express.json()); // Middleware pour analyser le JSON
+// Augmenter les limites
+app.use(express.json({ 
+  limit: '50mb' 
+}));
+app.use(express.urlencoded({ 
+  limit: '50mb', 
+  extended: true 
+}));
+// Middleware pour analyser le JSON
 
 // Configuration de la base de données PostgreSQL
 const config = {
@@ -34,6 +42,21 @@ const config = {
     ca: fs.readFileSync("./ca.pem").toString(),
   },
 };
+
+app.use((req, res, next) => {
+  req.setTimeout(30000); // 30 secondes
+  res.setTimeout(30000); // 30 secondes
+  next();
+});
+
+// Route de diagnostic
+app.get('/ping', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString() 
+  });
+});
+
 
 const client = new pg.Client(config);
 client.connect();
@@ -82,6 +105,13 @@ app.use((req, res, next) => {
   console.log(`Requête reçue: ${req.method} ${req.path}`);
   next();
 });
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  console.log('Headers:', req.headers);
+  console.log('Body:', req.body);
+  next();
+});
+
 
 // Route de test
 app.get('/health', (req, res) => {
