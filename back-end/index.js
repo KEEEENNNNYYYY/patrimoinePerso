@@ -8,19 +8,18 @@ require("dotenv").config();
 
 const app = express();
 const port = process.env.PORT || 3000;
+app.options('*', cors()); // Ceci permet de répondre aux requêtes OPTIONS
 
 
 // Configuration de CORS
 app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  origin: [
-    'https://patrimoineperso.onrender.com',  // URL de ton frontend en production
-    'http://localhost:5173',  // Frontend en développement
-    'http://localhost:4173'
-  ],
-  credentials: true
+  origin: '*',
+  credentials: true,
 }));
+// CORS prévol (pour gérer les requêtes OPTIONS)
+app.options('*', cors());
 
 // Augmenter les limites des requêtes
 app.use(express.json({ limit: '50mb' }));
@@ -85,6 +84,7 @@ app.post("/register", async (req, res) => {
 
 // Route pour le login des utilisateurs
 app.post("/login", async (req, res) => {
+  console.log('Request received:', req.body);
   const { email, password } = req.body;
 
   try {
@@ -104,11 +104,12 @@ app.post("/login", async (req, res) => {
       expiresIn: "1h",
     });
 
-    res.status(200).json({ message: "Login successful", token });
+    res.status(200).set('Access-Control-Allow-Credentials', 'true').json({ message: "Login successful", token });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
   }
+  
 });
 
 // Route protégée pour obtenir les informations de l'utilisateur

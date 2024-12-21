@@ -20,13 +20,14 @@ const Login = () => {
     setLoading(true); // Début du chargement
 
     try {
-      // Remplacer l'URL par l'API backend appropriée
+      
       const response = await fetch('https://patrimoineperso-backend.onrender.com/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password }), // Envoyer les données sous forme de JSON
+        body: JSON.stringify({ username, password }),
+        credentials: 'include' // Envoyer les données sous forme de JSON
       });
 
       if (!response.ok) {
