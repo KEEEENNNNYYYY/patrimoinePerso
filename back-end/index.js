@@ -7,7 +7,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 10000;
 
 // Configuration de CORS
 app.use(cors({
@@ -59,8 +59,16 @@ const authenticateToken = (req, res, next) => {
     next();
   });
 };
+app.get('/', (req, res) => {
+  res.send('Backend is running!');
+});
+app.options('/login', cors());
 
-// Route pour le login des utilisateurs
+
+app.get('/login', (req,  res )=>{
+  res.send('/login endpoint is working');
+})
+
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
