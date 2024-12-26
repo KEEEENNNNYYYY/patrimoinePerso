@@ -1,46 +1,33 @@
 import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom"; // Remplace useHistory par useNavigate
+import { auth } from "../firebase"; 
+import { signInWithEmailAndPassword } from "firebase/auth";
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate(); // Nouvelle instance de useNavigate
 
     const handleLogin = async (e) => {
         e.preventDefault();
-
-        if (!email || !password) {
-            setError('Email and password are required.');
-            return;
-        }
-
-        setLoading(true);
-
         try {
-            const response = await fetch('https://patrimoineperso-backend.onrender.com/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password }), // Envoie l'email et le mot de passe
-                credentials: 'include',
-                mode: 'no-cors'  // Inclus les cookies pour l'authentification
-            });
-
-            if (!response.ok) {
-                throw new Error('Login failed! Please check your credentials.');
-            }
-
-            const data = await response.json();
-            console.log('Login successful:', data);
-
-            setEmail('');
-            setPassword('');
-            setError(null);
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            navigate("/dashboard"); // Remplace history.push par navigate
+            console.log("Utilisateur connecté :", userCredential.user);
         } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
+            let errorMessage = "Échec de la connexion. Veuillez réessayer.";
+            if (err.code === "auth/invalid-email") {
+                errorMessage = "L'email est incorrect.";
+            } else if (err.code === "auth/user-disabled") {
+                errorMessage = "Ce compte a été désactivé.";
+            } else if (err.code === "auth/user-not-found") {
+                errorMessage = "Utilisateur non trouvé.";
+            } else if (err.code === "auth/wrong-password") {
+                errorMessage = "Mot de passe incorrect.";
+            }
+            setError(errorMessage);
         }
     };
 
