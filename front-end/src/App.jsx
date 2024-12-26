@@ -1,54 +1,44 @@
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'; // Correction des importations
-import Login from './component/login'; // Assurez-vous que le chemin vers Login est correct
-import './App.css';
-import { useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { auth } from './firebase';
-
+import Login from './component/login';
+import Dashboard from './Dashboard';
+import './App.css';
 
 function App() {
+  const [user, setUser] = useState(null);
+
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user) {
-        // Si un utilisateur est déjà authentifié, rediriger vers la page d'accueil '/'
-        if (window.location.pathname === '/login') {
-          window.location.replace('/dashboard'); // Redirection vers la page d'accueil
-        }
-      }
+      setUser(user); // Met à jour l'état de l'utilisateur
     });
 
-
-    return () => unsubscribe();
+    return () => unsubscribe(); // Nettoyage de l'écouteur
   }, []);
+
   const handleLogout = async () => {
     try {
-      await auth.signOut(); // Déconnexion de l'utilisateur
-      history.push('/login'); // Redirige vers la page de connexion après déconnexion
+      await auth.signOut(); // Déconnexion
+      window.location.replace('/login'); // Redirection vers la page de connexion
     } catch (err) {
       console.error("Erreur de déconnexion :", err.message);
     }
   };
+
   return (
-    <Router> {/* Enveloppez votre application avec Router */}
-      <Routes> {/* Définissez les routes de votre application */}
-        <Route path="/login" element={<Login />} /> {/* Définissez la route /login pour afficher la page Login */}
+    <Router>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/dashboard"
+          element={user ? <Dashboard /> : <Navigate to="/login" />} 
+        />
+        <Route path="/" element={<Navigate to="/dashboard" />} /> 
       </Routes>
 
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src="/assets/react.svg" className="logo react" alt="React logo" />
-        </a>
+        <button onClick={handleLogout}>Se déconnecter</button>
       </div>
-
-      <p>
-        Edit <code>src/App.jsx</code> and save to test HMR
-      </p>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-      <button onClick={handleLogout}>Se déconnecter</button>
     </Router>
   );
 }
