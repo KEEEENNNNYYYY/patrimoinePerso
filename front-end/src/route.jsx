@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import Login from './Login';
-import Dashboard from './Dashboard'; // Exemple d'une page protégée
+import Dashboard from './component/Dashboard/Dashboard'; // Exemple d'une page protégée
 import PrivateRoute from './PrivateRoute';
 
 const App = () => {

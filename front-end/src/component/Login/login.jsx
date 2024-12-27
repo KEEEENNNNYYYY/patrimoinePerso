@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom"; // Remplace useHistory par useNavigate
-import { auth } from "../firebase"; 
+import { auth } from "../../firebase"; 
 import { signInWithEmailAndPassword } from "firebase/auth";
 
 const Login = () => {
