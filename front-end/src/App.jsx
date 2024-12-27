@@ -1,8 +1,8 @@
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { auth } from './firebase';
-import Login from './component/login';
-import Dashboard from './Dashboard';
+import Login from './component/Login/login';
+import Dashboard from './component/Dashboard/Dashboard';
 import './App.css';
 
 function App() {
@@ -36,9 +36,6 @@ function App() {
         <Route path="/" element={<Navigate to="/dashboard" />} /> 
       </Routes>
 
-      <div>
-        <button onClick={handleLogout}>Se déconnecter</button>
-      </div>
     </Router>
   );
 }
