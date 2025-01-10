@@ -11,7 +11,7 @@ const Dashboard = () => {
         // Récupérer les données de l'utilisateur
         const fetchUser = async () => {
             try {
-                const response = await Axios.get('http://localhost:5000/users');
+                const response = await Axios.get('https://patrimoineperso-backend.onrender.com/users');
                 if (response.data && response.data.length > 0) {
                     setUser(response.data[0].first_name); // Utiliser first_name
                 } else {
