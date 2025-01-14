@@ -3,3 +3,6 @@
   margin: 0 auto;
   box-sizing: border-box;
 }
+body {
+  overflow-x: hidden;
+}
