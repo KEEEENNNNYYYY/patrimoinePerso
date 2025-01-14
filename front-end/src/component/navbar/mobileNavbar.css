@@ -1,0 +1,16 @@
+@media only screen and (max-width: 767px) {
+    
+    nav input{
+        display: none;
+    }
+    nav{
+        height: 10dvh;
+    }
+    nav h1{
+        font-size: 1.5rem;
+    }
+    .setting-button{
+        height: 5dvh !important;
+        width: 5dvh !important;
+    }
+}
