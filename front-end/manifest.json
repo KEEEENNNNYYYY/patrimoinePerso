@@ -2,7 +2,7 @@
     "name": "MyPatrimoine",
     "short_name": "MyPatrimoine",
     "description": "MyPatrimoine",
-    "start_url": "/",
+    "start_url": "/login",
     "display": "standalone", 
     "background_color": "#ffffff",
     "theme_color": "#000000",
