@@ -3,6 +3,7 @@ import { auth } from '../../firebase';
 import { signOut } from 'firebase/auth';
 import Axios from 'axios';
 import './navbar.css';
+import './mobileNavbar.css'
 
 const Navigationbar = () => {
     const [clicked, isClicked] = useState(false);
@@ -56,9 +57,6 @@ const Navigationbar = () => {
                 </h1>
                 <input type="text" />
                 <div className='right-container'>
-                    <button className='setting-button'>
-                        <img src="../../../public/help-web-button.png" alt="" className='help'/>
-                    </button>
                     
                     <button onClick={() => { isClicked(!clicked); handleDisplay(); }} className='setting-button'>
                         <img
