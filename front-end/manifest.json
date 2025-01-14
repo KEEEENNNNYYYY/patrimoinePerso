@@ -5,7 +5,7 @@
     "start_url": "/login",
     "display": "standalone", 
     "background_color": "#ffffff",
-    "theme_color": "#000000",
+    "theme_color": "#ffffff",
     "icons": [
       {
         "src": "/front-end/src/assets/letter-m.png",
