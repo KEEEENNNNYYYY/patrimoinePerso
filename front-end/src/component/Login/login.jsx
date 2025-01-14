@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"; // Remplace useHistory par useNa
 import { auth } from "../../firebase"; 
 import { signInWithEmailAndPassword } from "firebase/auth";
 import './mobileLogin.css';
+import './login.css'
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -64,6 +65,10 @@ const Login = () => {
                     {loading ? 'Logging in...' : 'Login'}
                 </button>
             </form>
+
+            <h1>
+                MyPatrimoine
+            </h1>
         </div>
     );
 };
