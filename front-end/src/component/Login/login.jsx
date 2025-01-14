@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom"; // Remplace useHistory par useNavigate
 import { auth } from "../../firebase"; 
 import { signInWithEmailAndPassword } from "firebase/auth";
+import './mobileLogin.css';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -38,7 +39,7 @@ const Login = () => {
 
             <form onSubmit={handleLogin}>
                 <div className="input-group">
-                    <label htmlFor="email">Email</label>
+                    <p htmlFor="email">Email</p>
                     <input
                         type="email"
                         id="email"
@@ -49,7 +50,7 @@ const Login = () => {
                 </div>
 
                 <div className="input-group">
-                    <label htmlFor="password">Password</label>
+                    <p htmlFor="password">Password</p>
                     <input
                         type="password"
                         id="password"
