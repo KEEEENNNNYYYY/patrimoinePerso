@@ -1,8 +1,9 @@
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { auth } from './firebase';
-import Login from './component/Login/login';
-import Dashboard from './component/Dashboard/Dashboard';
+import Login from './page/Login/login';
+import Profil from './page/Profil/profil.jsx'
+import Dashboard from './page/Dashboard/Dashboard';
 import './App.css';
 
 function App() {
@@ -10,20 +11,11 @@ function App() {
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      setUser(user); // Met à jour l'état de l'utilisateur
+      setUser(user);
     });
 
     return () => unsubscribe(); // Nettoyage de l'écouteur
   }, []);
-
-  const handleLogout = async () => {
-    try {
-      await auth.signOut(); // Déconnexion
-      window.location.replace('/login'); // Redirection vers la page de connexion
-    } catch (err) {
-      console.error("Erreur de déconnexion :", err.message);
-    }
-  };
 
   return (
     <Router>
@@ -33,7 +25,9 @@ function App() {
           path="/dashboard"
           element={user ? <Dashboard /> : <Navigate to="/login" />} 
         />
-        <Route path="/" element={<Navigate to="/dashboard" />} /> 
+        <Route path="/" element={<Navigate to="/dashboard" />} />
+        <Route path="/profil" element={<Profil />} />
+
       </Routes>
 
     </Router>
