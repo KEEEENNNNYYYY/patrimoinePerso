@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from "react-router-dom"; // Remplace useHistory par useNavigate
-import { auth } from "../../firebase"; 
+import { useNavigate } from "react-router-dom";
+import { auth } from "../../firebase.js";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import './mobileLogin.css';
 import './login.css'
@@ -9,8 +9,8 @@ const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate(); // Nouvelle instance de useNavigate
+    const [loading] = useState(false);
+    const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
